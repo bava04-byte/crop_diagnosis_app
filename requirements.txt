@@ -9,3 +9,4 @@ pygments==2.19.2
 typing-extensions==4.14.1
 deep-translator
 speechrecognition==3.10.0  
+googletrans==4.0.0rc1
