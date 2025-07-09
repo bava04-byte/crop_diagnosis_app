@@ -83,7 +83,12 @@ if st.button("Analyze Now"):
     if not uploaded_file:
         st.warning("Please upload a crop image.")
     else:
-        image = Image.open(uploaded_file)
+        try:
+            image = Image.open(uploaded_file).convert("RGB")  # Ensure RGB
+        except Exception as e:
+            st.error(f"Could not open image: {e}")
+            st.stop()
+
         final_input = description.strip() if description.strip() else voice_input_text.strip()
 
         if not final_input:
@@ -92,6 +97,7 @@ if st.button("Analyze Now"):
             with st.spinner("Analyzing the crop issue..."):
                 diagnosis, solution = analyze_crop_issue(image, final_input, crop_type)
 
+            # Translate if needed
             if lang_code != "en":
                 diagnosis = translate_text(diagnosis, lang_code)
                 solution = translate_text(solution, lang_code)
@@ -99,7 +105,7 @@ if st.button("Analyze Now"):
             col1, col2 = st.columns(2)
 
             with col1:
-                st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
+                st.image(image, caption="📷 Uploaded Crop Image")  # ✅ no unexpected args
 
             with col2:
                 st.markdown("### 🧪 Diagnosis")
