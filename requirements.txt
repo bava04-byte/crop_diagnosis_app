@@ -7,3 +7,4 @@ Pillow==10.3.0
 markdown-it-py==2.2.0
 pygments==2.19.2
 typing-extensions==4.14.1
+deep-translator
