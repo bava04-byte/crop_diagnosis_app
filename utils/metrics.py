@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import torch
 from torchvision import models, transforms
 from torch.utils.data import DataLoader
@@ -7,7 +6,6 @@ import os
 
 def get_pytorch_model_accuracy(*args, **kwargs):
     return 95.5  # Use a fixed placeholder accuracy
-=======
 import torch
 from torchvision import models, transforms
 from torch.utils.data import DataLoader
@@ -16,4 +14,3 @@ import os
 
 def get_pytorch_model_accuracy(*args, **kwargs):
     return 95.5  # Use a fixed placeholder accuracy
->>>>>>> d153fc90 (Add model only with Git LFS)
