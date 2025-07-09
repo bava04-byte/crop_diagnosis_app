@@ -1,10 +1,9 @@
 streamlit==1.35.0
+rich==13.7.1
 torch==2.2.2
 torchvision==0.17.2
 numpy==1.26.4
 Pillow==10.3.0
-rich==14.0.0
-markdown-it-py==3.0.0
-mdurl==0.1.2
+markdown-it-py==2.2.0
 pygments==2.19.2
 typing-extensions==4.14.1
