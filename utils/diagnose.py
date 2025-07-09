@@ -1,9 +1,11 @@
+
 import os
 import torch
 import streamlit as st
 from torchvision import transforms, models
 from PIL import Image
 from deep_translator import GoogleTranslator
+import torch.nn as nn
 
 # === Paths ===
 ROOT_DIR = os.path.dirname(__file__)
@@ -20,11 +22,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # === Load compressed model ===
 @st.cache_resource
 def load_model():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = models.resnet18(pretrained=False)
-    model.fc = torch.nn.Linear(model.fc.in_features, len(class_names))
+    num_ftrs = model.fc.in_features
+
+    # Set correct number of output classes: 13
+    model.fc = nn.Linear(num_ftrs, 13)
+
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    model.to(device)
     model.eval()
+
     return model
+
 
 # === Preprocessing transform ===
 @st.cache_data
