@@ -7,14 +7,11 @@ st.set_page_config(page_title="Smart Crop Issue Detector", layout="centered")
 from PIL import Image
 from utils.diagnose import analyze_crop_issue
 from utils.metrics import get_pytorch_model_accuracy
-import speech_recognition as sr
-import tempfile
-import os
 from googletrans import Translator
 
 # --- Title & Instructions ---
 st.title("🌾 Smart Crop Issue Detector")
-st.markdown("Upload an image of your crop and describe the problem using text or voice.")
+st.markdown("Upload an image of your crop and describe the problem using text.")
 
 # --- Sidebar: Model Accuracy ---
 with st.sidebar:
@@ -45,29 +42,10 @@ with st.expander("🖼️ Upload Crop Image"):
     uploaded_file = st.file_uploader("Upload Crop Image", type=["jpg", "jpeg", "png"])
 
 # --- Text Description ---
-st.subheader("✍️ Describe the Problem (Recommended)")
+st.subheader("✍️ Describe the Problem")
 description = st.text_area(
     "Type crop symptoms (e.g., yellow leaves, black spots, white powder, curling, dryness, insects)..."
 )
-
-# --- Voice Input ---
-st.subheader("🎙️ Or Upload Voice Description (Optional)")
-voice_input_text = ""
-
-with st.expander("📁 Upload a Voice Note (WAV Only)"):
-    voice_file = st.file_uploader("Upload Voice Note (WAV)", type=["wav"], key="voice_input")
-    if voice_file:
-        recognizer = sr.Recognizer()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-            tmp.write(voice_file.read())
-            tmp_path = tmp.name
-        try:
-            with sr.AudioFile(tmp_path) as source:
-                audio = recognizer.record(source)
-                voice_input_text = recognizer.recognize_google(audio, language="en-IN")
-                st.success(f"🗣️ Voice to Text: {voice_input_text}")
-        except Exception as e:
-            st.error(f"Voice recognition failed: {e}")
 
 # --- Translator Function ---
 def translate_text(text, lang_code):
@@ -83,21 +61,15 @@ if st.button("Analyze Now"):
     if not uploaded_file:
         st.warning("Please upload a crop image.")
     else:
-        try:
-            image = Image.open(uploaded_file).convert("RGB")  # Ensure RGB
-        except Exception as e:
-            st.error(f"Could not open image: {e}")
-            st.stop()
-
-        final_input = description.strip() if description.strip() else voice_input_text.strip()
+        image = Image.open(uploaded_file)
+        final_input = description.strip()
 
         if not final_input:
-            st.warning("Please describe the issue using text or voice.")
+            st.warning("Please describe the issue using text.")
         else:
             with st.spinner("Analyzing the crop issue..."):
                 diagnosis, solution = analyze_crop_issue(image, final_input, crop_type)
 
-            # Translate if needed
             if lang_code != "en":
                 diagnosis = translate_text(diagnosis, lang_code)
                 solution = translate_text(solution, lang_code)
@@ -105,7 +77,7 @@ if st.button("Analyze Now"):
             col1, col2 = st.columns(2)
 
             with col1:
-                st.image(image, caption="📷 Uploaded Crop Image")  # ✅ no unexpected args
+                st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
 
             with col2:
                 st.markdown("### 🧪 Diagnosis")
