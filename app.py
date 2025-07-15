@@ -57,31 +57,47 @@ def translate_text(text, lang_code):
 
 # --- Analyze Button ---
 st.header("🔬 Get Diagnosis")
+
 if st.button("Analyze Now"):
     if not uploaded_file:
-        st.warning("Please upload a crop image.")
-    else:
-        image = Image.open(uploaded_file)
-        final_input = description.strip()
+        st.warning("⚠️ Please upload a crop image first.")
+        st.stop()
 
-        if not final_input:
-            st.warning("Please describe the issue using text.")
-        else:
-            with st.spinner("Analyzing the crop issue..."):
-                diagnosis, solution = analyze_crop_issue(image, final_input, crop_type)
+    # Try to open the uploaded image safely
+    try:
+        image = Image.open(uploaded_file).convert("RGB")
+    except Exception as e:
+        st.error(f"❌ Could not open the uploaded image: {e}")
+        st.stop()
 
-            if lang_code != "en":
-                diagnosis = translate_text(diagnosis, lang_code)
-                solution = translate_text(solution, lang_code)
+    final_input = description.strip()
 
-            col1, col2 = st.columns(2)
+    if not final_input:
+        st.warning("⚠️ Please describe the issue using text.")
+        st.stop()
 
-            with col1:
-                st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
+    with st.spinner("🔬 Analyzing the crop issue..."):
+        try:
+            diagnosis, solution = analyze_crop_issue(image, final_input, crop_type)
+        except Exception as e:
+            st.error(f"❌ Analysis failed: {e}")
+            st.stop()
 
-            with col2:
-                st.markdown("### 🧪 Diagnosis")
-                st.success(diagnosis)
+    if lang_code != "en":
+        try:
+            diagnosis = translate_text(diagnosis, lang_code)
+            solution = translate_text(solution, lang_code)
+        except Exception as e:
+            st.error(f"⚠️ Translation failed: {e}")
 
-                st.markdown("### 💡 Suggested Action")
-                st.info(solution)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
+
+    with col2:
+        st.markdown("### 🧪 Diagnosis")
+        st.success(diagnosis)
+
+        st.markdown("### 💡 Suggested Action")
+        st.info(solution)
