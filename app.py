@@ -97,13 +97,12 @@ if st.button("Analyze Now"):
             solution = translate_text(solution, lang_code)
         except Exception as e:
             st.error(f"⚠️ Translation failed: {e}")
-
     # ✅ Step 6: Final type guard for display
     if isinstance(image, Image.Image):
         col1, col2 = st.columns(2)
 
         with col1:
-            st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
+            st.image(image, caption="📷 Uploaded Crop Image")
 
         with col2:
             st.markdown("### 🧪 Diagnosis")
@@ -113,3 +112,4 @@ if st.button("Analyze Now"):
             st.info(solution)
     else:
         st.error("❌ Something went wrong — the image object is not valid.")
+
