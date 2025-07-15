@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(page_title="Smart Crop Issue Detector", layout="centered")
 
 # 📦 Other imports
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from utils.diagnose import analyze_crop_issue
 from utils.metrics import get_pytorch_model_accuracy
 from googletrans import Translator
@@ -59,23 +59,30 @@ def translate_text(text, lang_code):
 st.header("🔬 Get Diagnosis")
 
 if st.button("Analyze Now"):
+    # ✅ Step 1: Check upload
     if not uploaded_file:
         st.warning("⚠️ Please upload a crop image first.")
         st.stop()
 
-    # Try to open the uploaded image safely
+    # ✅ Step 2: Check file type and open safely
     try:
+        # Rewind file in case Streamlit messed with it
+        uploaded_file.seek(0)
         image = Image.open(uploaded_file).convert("RGB")
+    except UnidentifiedImageError:
+        st.error("❌ The uploaded file is not a valid image. Please upload a valid JPG or PNG.")
+        st.stop()
     except Exception as e:
         st.error(f"❌ Could not open the uploaded image: {e}")
         st.stop()
 
+    # ✅ Step 3: Check text input
     final_input = description.strip()
-
     if not final_input:
         st.warning("⚠️ Please describe the issue using text.")
         st.stop()
 
+    # ✅ Step 4: Analyze safely
     with st.spinner("🔬 Analyzing the crop issue..."):
         try:
             diagnosis, solution = analyze_crop_issue(image, final_input, crop_type)
@@ -83,6 +90,7 @@ if st.button("Analyze Now"):
             st.error(f"❌ Analysis failed: {e}")
             st.stop()
 
+    # ✅ Step 5: Translate if needed
     if lang_code != "en":
         try:
             diagnosis = translate_text(diagnosis, lang_code)
@@ -90,14 +98,18 @@ if st.button("Analyze Now"):
         except Exception as e:
             st.error(f"⚠️ Translation failed: {e}")
 
-    col1, col2 = st.columns(2)
+    # ✅ Step 6: Final type guard for display
+    if isinstance(image, Image.Image):
+        col1, col2 = st.columns(2)
 
-    with col1:
-        st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
+        with col1:
+            st.image(image, caption="📷 Uploaded Crop Image", use_container_width=True)
 
-    with col2:
-        st.markdown("### 🧪 Diagnosis")
-        st.success(diagnosis)
+        with col2:
+            st.markdown("### 🧪 Diagnosis")
+            st.success(diagnosis)
 
-        st.markdown("### 💡 Suggested Action")
-        st.info(solution)
+            st.markdown("### 💡 Suggested Action")
+            st.info(solution)
+    else:
+        st.error("❌ Something went wrong — the image object is not valid.")
